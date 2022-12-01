@@ -2,7 +2,7 @@ from enum import Enum
 import numpy as np
 
 
-class ResModConst(Enum):
+class PreprocConst(Enum):
     """Constants for the downscaling and cropping function"""
     CROP_VERT_START = 250
     CROP_HOR_START = 0
