@@ -1,5 +1,5 @@
 from frame import FrameDB
-from resmod import ResMod
+from preproc import ResMod
 from visualizer import Visualizer
 import cv2 as cv
 import numpy as np

@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from frame import FrameDB
-from resmod import ResMod
+from preproc import ResMod
 
 
 class FrameDimensions(unittest.TestCase):
