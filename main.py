@@ -1,23 +1,27 @@
 from frame import FrameDB
 from preproc import Preproc
 from visualizer import Visualizer
+from feat_ext import FeatExtract
 import cv2 as cv
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class LaneDetection:
     """Class for running the lane detection algorithm"""
 
-    def __init__(self, frame: FrameDB = FrameDB('example_material\lane_video.mkv'), prepoc: Preproc = Preproc(), visualizer: Visualizer = Visualizer()):
+    def __init__(self, frame: FrameDB = FrameDB('example_material\lane_video.mkv'), prepoc: Preproc = Preproc(), featext: FeatExtract = FeatExtract(), visualizer: Visualizer = Visualizer()):
         """Initializing input classes
 
         Args:
             frame (FrameDB): Class for handling the example video file
-            prepoc (Preproc): Class for resolution modifying methods
+            prepoc (Preproc): Class for image processing methods
+            featext (FeatExtract): Class for feature extraction
             visualizer (Visualizer): Class for visualizing results
         """
         self.frame = frame
         self.prepoc = prepoc
+        self.featext = featext
         self.visualizer = visualizer
 
     def run(self) -> None:
@@ -26,8 +30,13 @@ class LaneDetection:
             self.streaming, imp_frame = self.frame.import_frame()
             downscaled = self.prepoc.downscale(imp_frame)
             dowscaled_cropped, disc = self.prepoc.extract_roi(downscaled)
-            extracted_lanes, yellow_lanes = self.prepoc.extract_lanes(dowscaled_cropped, lower_yellow = np.array([15,80,50]), upper_yellow = np.array([30,200,255]), lower_white = np.array([0,100,0]), upper_white = np.array([180,255,255]))
-            self.visualizer.render(extracted_lanes)
+            extracted_lanes, yellow_lanes = self.prepoc.extract_lanes(dowscaled_cropped, lower_yellow=np.array(
+                [15, 80, 50]), upper_yellow=np.array([30, 200, 255]), lower_white=np.array([0, 100, 0]), upper_white=np.array([180, 255, 255]))
+            birdseye, Minv, birdview_points = self.prepoc.birdseye_transform(
+                extracted_lanes)
+            blurred, binary = self.prepoc.make_binary(birdseye)
+            self.visualizer.render_cv(binary)
+            # self.visualizer.plot_birdview(extracted_lanes, birdview_points)
             # Stopping streaming with q key
             if cv.waitKey(1) == ord('q'):
                 break
@@ -37,7 +46,7 @@ class LaneDetection:
 
 def main():
     lane_detector = LaneDetection(frame=FrameDB(
-        'example_material\lane_video.mkv'), prepoc=Preproc(), visualizer=Visualizer())
+        'example_material\lane_video.mkv'), prepoc=Preproc(), featext=FeatExtract(), visualizer=Visualizer())
     lane_detector.run()
 
 
