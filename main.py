@@ -13,8 +13,8 @@ class LaneDetection:
 
         Args:
             frame (FrameDB): Class for handling the example video file
-            prepoc (ResMod): Class for resolution modifying methods
-            visualizer (Visualizer): Class for visualizing the results
+            prepoc (Preproc): Class for resolution modifying methods
+            visualizer (Visualizer): Class for visualizing results
         """
         self.frame = frame
         self.prepoc = prepoc
@@ -26,7 +26,7 @@ class LaneDetection:
             self.streaming, imp_frame = self.frame.import_frame()
             downscaled = self.prepoc.downscale(imp_frame)
             dowscaled_cropped, disc = self.prepoc.extract_roi(downscaled)
-            extracted_lanes = self.prepoc.extract_lanes(dowscaled_cropped)
+            extracted_lanes, yellow_lanes = self.prepoc.extract_lanes(dowscaled_cropped, lower_yellow = np.array([15,80,50]), upper_yellow = np.array([30,200,255]), lower_white = np.array([0,100,0]), upper_white = np.array([180,255,255]))
             self.visualizer.render(extracted_lanes)
             # Stopping streaming with q key
             if cv.waitKey(1) == ord('q'):

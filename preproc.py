@@ -34,14 +34,14 @@ class Preproc:
         """
         # .shape[0] = height, .shape[1] = width 
         cropped = frame[self.CROP_VERT_START:(
-            frame.shape[0]), self.CROP_HOR_START:(frame.shape[1])]
+            frame.shape[0]), self.CROP_HOR_START:(frame.shape[1]-self.CROP_HOR_START)]
         discarded = frame[0:self.CROP_VERT_START, 0:(frame.shape[1])]
         return cropped, discarded
 
     def extract_lanes(self, cropped: np.ndarray,
-        lower_yellow = np.array([25,70,100]),
-        upper_yellow = np.array([70,200,255]),
-        lower_white = np.array([27,122,25]),
+        lower_yellow = np.array([0,100,100]),
+        upper_yellow = np.array([100,200,255]),
+        lower_white = np.array([0,122,25]),
         upper_white = np.array([101,255,150])) -> np.ndarray: # OpenCV halves the Hue values to fit 0-180
         """Function to convert the input image from BGR to HLS color space and then mask out everything other than the white/yellow lanes.
 
@@ -54,11 +54,12 @@ class Preproc:
 
         Returns:
             combined (np.ndarray): Extracted lanes lines.
+            hls_yellow (np.ndarray): Extracted yellow lanes.
         """
         hls = cv.cvtColor(cropped, cv.COLOR_BGR2HLS)
-        mask0 = cv.inRange(hls, lower_yellow, upper_yellow)
-        mask1 = cv.inRange(hls, lower_white, upper_white)
-        hls_yellow = cv.bitwise_and(cropped,cropped, mask = mask0)
-        hls_white = cv.bitwise_and(cropped,cropped, mask = mask1)
+        mask_yellow = cv.inRange(hls, lower_yellow, upper_yellow)
+        mask_white = cv.inRange(hls, lower_white, upper_white)
+        hls_yellow = cv.bitwise_and(cropped,cropped, mask = mask_yellow)
+        hls_white = cv.bitwise_and(cropped,cropped, mask = mask_white)
         combined = cv.bitwise_or(hls_white,hls_yellow)
-        return combined
+        return combined, hls_yellow

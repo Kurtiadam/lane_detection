@@ -5,7 +5,7 @@ import numpy as np
 class PreprocConst(Enum):
     """Constants for the downscaling and cropping function"""
     CROP_VERT_START = 250
-    CROP_HOR_START = 0
+    CROP_HOR_START = 25
 
 
 class ColorSpaceTransConst(Enum):
