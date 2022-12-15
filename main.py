@@ -24,7 +24,7 @@ class LaneDetection:
         self.featext = featext
         self.visualizer = visualizer
 
-    def run(self) -> None:
+    def run(self, birdseye_view__points_debug: bool) -> None:
         """Running the the stream of the video file"""
         while (self.frame.streaming):
             self.streaming, imp_frame = self.frame.import_frame()
@@ -35,8 +35,10 @@ class LaneDetection:
             birdseye, Minv, birdview_points = self.prepoc.birdseye_transform(
                 extracted_lanes)
             blurred, binary = self.prepoc.make_binary(birdseye)
-            self.visualizer.render_cv(binary)
-            # self.visualizer.plot_birdview(extracted_lanes, birdview_points)
+            opened = self.prepoc.opening(binary)
+            self.visualizer.render_cv(opened)
+            if birdseye_view__points_debug:
+                self.visualizer.plot_birdview(extracted_lanes, birdview_points)
             # Stopping streaming with q key
             if cv.waitKey(1) == ord('q'):
                 break
@@ -47,7 +49,7 @@ class LaneDetection:
 def main():
     lane_detector = LaneDetection(frame=FrameDB(
         'example_material\lane_video.mkv'), prepoc=Preproc(), featext=FeatExtract(), visualizer=Visualizer())
-    lane_detector.run()
+    lane_detector.run(birdseye_view__points_debug=False)
 
 
 if __name__ == "__main__":
