@@ -33,3 +33,15 @@ class Visualizer():
         plt.plot(rightlower[0], rightlower[1], marker="o", color="red")
         plt.imshow(frame)
         plt.show()
+
+    @staticmethod
+    def plot_histogram(histogram: np.ndarray):
+        """This function shows the histogram with matplotlib in a new window to the user.
+
+        Args:
+            histogram (np.ndarray): Input histogram returned by make_histogram method.
+        """
+        plt.xlabel("X coordinates")
+        plt.ylabel("Number of white pixels")
+        plt.plot(histogram)
+        plt.show()
