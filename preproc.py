@@ -83,7 +83,7 @@ class Preproc:
         birdseye = cv.warpPerspective(input, Matrix, (width, height))
         return birdseye, Minv, birdview_points  # Felülnézeti kép, inverz mátrix
 
-    def make_binary(self, combined, thresh=80, kernel=np.ones((5, 5))) -> tuple[np.ndarray, np.ndarray]:
+    def make_binary(self, combined: np.ndarray, thresh: int = 80, kernel: np.ndarray = np.ones((5, 5))) -> tuple[np.ndarray, np.ndarray]:
         """Grayscale image creation, blurring and thresholding method.
 
         Args:
@@ -101,3 +101,19 @@ class Preproc:
         # canny = cv2.Canny(blurred,90,150) #100,200 basic tresholds <- SLOW | FASTER -> Sobel operator
         #canny = cv2.morphologyEx(canny, cv2.MORPH_OPEN, kernel)
         return blurred, binary
+
+        # Opening (erosion + dilation)
+    def opening(self, birdseye: np.ndarray, kernel: np.ndarray = np.ones((3, 3), np.uint8), iterations: int = 1) -> np.ndarray:
+        """Morphologic opening: first erosion then dilation.
+
+        Args:
+            birdseye (np.ndarray): Frame to erode.
+            kernel (np.ndarray, optional): Eroding kernel. Defaults to np.ones((3,3),np.uint8).
+            iterations (int, optional): Number of erosion iterations. Defaults to 1.
+
+        Returns:
+            opened (np.ndarray): Eroded frame.
+        """
+        eroded = cv.erode(birdseye, kernel, iterations)
+        opened = cv.dilate(eroded, kernel, iterations)
+        return opened
