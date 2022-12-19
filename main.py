@@ -6,7 +6,6 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 class LaneDetection:
     """Class for running the lane detection algorithm"""
 
@@ -28,17 +27,18 @@ class LaneDetection:
         while (self.frame.streaming):
             self.streaming, imp_frame = self.frame.import_frame()
             downscaled = self.prepoc.downscale(imp_frame)
-            dowscaled_cropped, disc = self.prepoc.extract_roi(downscaled)
-            extracted_lanes, yellow_lanes = self.prepoc.extract_lanes(dowscaled_cropped, lower_yellow=np.array(
+            downscaled_cropped, disc = self.prepoc.extract_roi(downscaled)
+            extracted_lanes, yellow_lanes = self.prepoc.extract_lanes(downscaled_cropped, lower_yellow=np.array(
                 [15, 80, 50]), upper_yellow=np.array([30, 200, 255]), lower_white=np.array([0, 100, 0]), upper_white=np.array([180, 255, 255]))
             birdseye, Minv, birdview_points = self.prepoc.birdseye_transform(
                 extracted_lanes)
             blurred, binary = self.prepoc.make_binary(birdseye)
             opened = self.prepoc.opening(binary)
             histogram = self.featext.make_histogram(opened)
-            left_poly, right_poly = self.featext.lane_search(opened,histogram)
-            self.visualizer.render_cv('Opened', opened)
-            self.visualizer.render_cv('Downscaled',downscaled)
+            left_poly, right_poly = self.featext.lane_search(
+                opened, histogram, nwindows=15, offset=10)
+            self.visualizer.render_cv(opened, 'Opened')
+            self.visualizer.render_cv(downscaled_cropped, 'Downscaled')
             if birdseye_view__points_debug:
                 self.visualizer.plot_birdview(extracted_lanes, birdview_points)
             elif histogram_debug:
