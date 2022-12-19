@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
+import scipy.signal as sc
 
 
 class FeatExtract:
@@ -33,8 +34,18 @@ class FeatExtract:
             _type_: _description_
         """
         midpoint = np.int32(histogram.shape[0]/2) #.shape[0] for histogram is width
-        leftxbase = np.argmax(histogram[:midpoint])
-        rightxbase = np.argmax(histogram[midpoint:]) + midpoint
+        leftxbase = sc.find_peaks(histogram[:midpoint])[0]
+        rightxbase = sc.find_peaks(histogram[midpoint:])[0]
+        try:
+            leftxbase = max(leftxbase) # Right atmost lane is the correct one
+            rightxbase = min(rightxbase) + midpoint
+        except:
+            try:
+                rightxbase = min(rightxbase) + midpoint
+                leftxbase = 0
+            except:
+                rightxbase = 0
+                leftxbase = 0
         out_frame = np.dstack((opened, opened, opened)) * 255 # Img to draw on
         window_h = np.int32(opened.shape[0] / nwindows) # window height
         nonzero = opened.nonzero() # get white pixels
@@ -54,9 +65,8 @@ class FeatExtract:
             win_xright_left = rightx_current - offset # left and right coordinate of the window on the right side of the image
             win_xright_right = rightx_current + offset
             # Making the windows for left and right side of the image
-            cv.rectangle(out_frame, (win_xleft_left, win_y_low), (win_xleft_right, win_y_high),(0,255,0), 1)
-            cv.rectangle(out_frame, (win_xright_left,win_y_low), (win_xright_right,win_y_high),(0,255,0), 1)
-            cv.imshow('Windows', out_frame)
+            cv.rectangle(opened, (win_xleft_left, win_y_low), (win_xleft_right, win_y_high),(255,255,0), 1)
+            cv.rectangle(opened, (win_xright_left,win_y_low), (win_xright_right,win_y_high),(255,255,0), 1)
             
             # Picking the white pixels which the windows contain on both sides
             good_left = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) &
