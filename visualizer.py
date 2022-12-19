@@ -5,13 +5,14 @@ import matplotlib.pyplot as plt
 
 class Visualizer():
     @staticmethod
-    def render_cv(frame: np.ndarray):
+    def render_cv(frame: np.ndarray, title: str = "Output"):
         """This function shows the image with opencv in a new window to the user.
 
         Args:
-            frame (np.ndarray): Frame to show with opencv.
+            frame (np.ndarray): frame (np.ndarray): Frame to show with opencv.
+            title (str, optional): Window name. Defaults to "Output".
         """
-        cv.imshow('Lane detection test video', frame)
+        cv.imshow(title, frame)
 
     @staticmethod
     def plot_birdview(frame: np.ndarray, points=[]):
