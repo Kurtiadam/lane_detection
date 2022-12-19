@@ -25,7 +25,6 @@ class LaneDetection:
         self.visualizer = visualizer
 
     def run(self, birdseye_view__points_debug: bool, histogram_debug: bool) -> None:
-        """Running the the stream of the video file"""
         while (self.frame.streaming):
             self.streaming, imp_frame = self.frame.import_frame()
             downscaled = self.prepoc.downscale(imp_frame)
@@ -37,7 +36,9 @@ class LaneDetection:
             blurred, binary = self.prepoc.make_binary(birdseye)
             opened = self.prepoc.opening(binary)
             histogram = self.featext.make_histogram(opened)
-            self.visualizer.render_cv(opened)
+            left_poly, right_poly = self.featext.lane_search(opened,histogram)
+            self.visualizer.render_cv('Opened', opened)
+            self.visualizer.render_cv('Downscaled',downscaled)
             if birdseye_view__points_debug:
                 self.visualizer.plot_birdview(extracted_lanes, birdview_points)
             elif histogram_debug:
