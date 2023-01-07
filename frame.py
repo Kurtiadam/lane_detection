@@ -36,6 +36,8 @@ class FrameDB:
     def save_to_database(self, frame_array):
         height, width, layers = frame_array[0].shape
         size = (width,height)
+        os.mkdir('output')
+        os.chdir('output')
         out = cv.VideoWriter('detected_lanes.avi', cv.VideoWriter_fourcc(*'XVID'), 24.0, size)
         for frame in frame_array:
             out.write(frame)
