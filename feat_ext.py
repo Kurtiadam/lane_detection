@@ -1,7 +1,5 @@
 import numpy as np
 import cv2 as cv
-import matplotlib.pyplot as plt
-import scipy.signal as sc
 
 
 class FeatExtract:
@@ -145,15 +143,12 @@ class FeatExtract:
         if left_side_ok and right_side_ok:
             left_fit = np.polyfit(lefty, leftx, 1)
             right_fit = np.polyfit(righty, rightx, 1)
-            print("Both lanes found")
             return left_fit, right_fit
         elif left_side_ok and ~right_side_ok:
             left_fit = np.polyfit(lefty, leftx, 1)
-            print("Right lane not found")
             return left_fit, right_fit_prev,
         elif ~left_side_ok and right_side_ok:
             right_fit = np.polyfit(righty, rightx, 1)
-            print("Left lane not found")
             return left_fit_prev, right_fit
         else:
             return left_fit_prev, right_fit_prev
