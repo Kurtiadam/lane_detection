@@ -182,7 +182,7 @@ class FeatExtract:
         #             return left_fit, right_fit, yellow_lanes
 
     # Visually show detected lanes area
-    def draw_lane_lines(self, frame: np.ndarray, birdseye: np.ndarray, Minv: np.ndarray, discarded: np.ndarray, left_fit: np.ndarray, right_fit: np.ndarray, CAMERA_OFFSET: int = 0):
+    def draw_lane_lines(self, frame: np.ndarray, birdseye: np.ndarray, Minv: np.ndarray, discarded: np.ndarray, left_fit: np.ndarray, right_fit: np.ndarray):
         """Draw the lane lines and the lane on the input frame.
 
         Args:
@@ -209,7 +209,6 @@ class FeatExtract:
         mean_x = np.mean((left_fitx, right_fitx), axis=0)
         pts_mean = np.array(
             [np.flipud(np.transpose(np.vstack([mean_x, ploty])))])
-        pts_mean_part = pts_mean[0][0:50]
 
         warp_zero = np.zeros_like(birdseye).astype(np.uint8)
         color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
@@ -225,7 +224,7 @@ class FeatExtract:
         lookaway_distance = int(pts_mean.shape[1]/2)
         # shape: (1, 230, 2); second -1 index indicating the most farthest point the detector can show
         mpts = np.int32(pts_mean[-1][lookaway_distance][-2])
-        deviation = original.shape[1] / 2 - abs(mpts) + CAMERA_OFFSET
+        deviation = original.shape[1] / 2 - abs(mpts)
         CENTER_OK = 50
         if abs(deviation) <= CENTER_OK:
             direction = 0
