@@ -15,7 +15,7 @@ class Preproc:
         downscaled = cv.resize(frame, DOWNSCALE_TARGET_RES)
         return downscaled
 
-    def extract_roi(self, frame: np.ndarray, CROP_VERT_START=250, CROP_HOR_START=25) -> tuple[np.ndarray, np.ndarray]:
+    def extract_roi(self, frame: np.ndarray, CROP_VERT_START=250, CROP_HOR_START=0) -> tuple[np.ndarray, np.ndarray]:
         """Function to extract region of interest from the frame.
         Args:
             frame (np.ndarray): Frame to change
@@ -29,10 +29,10 @@ class Preproc:
         # .shape[0] = height, .shape[1] = width
         cropped = frame[CROP_VERT_START:(
             frame.shape[0]), CROP_HOR_START:(frame.shape[1]-CROP_HOR_START)]
-        discarded = frame[0:CROP_VERT_START, 0:(frame.shape[1])]
+        discarded = frame[0:CROP_VERT_START, CROP_HOR_START:(frame.shape[1]-CROP_HOR_START)]
         return cropped, discarded
 
-    def extract_lanes(self, cropped: np.ndarray,
+    def colorspace_transform(self, cropped: np.ndarray, mode: int,
                       lower_yellow=np.array([0, 100, 100]),
                       upper_yellow=np.array([100, 200, 255]),
                       lower_white=np.array([0, 122, 25]),
@@ -51,14 +51,25 @@ class Preproc:
             hls_yellow (np.ndarray): Extracted yellow lanes.
         """
         hls = cv.cvtColor(cropped, cv.COLOR_BGR2HLS)
+        # h_channel = hls[:,:,0]
+        l_channel = hls[:,:,1]
+        # s_channel = hls[:,:,2]
+        # cv.imshow('H', h_channel)
+        # cv.imshow('S', s_channel)
+        # cv.imshow('L', l_channel)
+
         mask_yellow = cv.inRange(hls, lower_yellow, upper_yellow)
         mask_white = cv.inRange(hls, lower_white, upper_white)
         hls_yellow = cv.bitwise_and(cropped, cropped, mask=mask_yellow)
         hls_white = cv.bitwise_and(cropped, cropped, mask=mask_white)
         combined = cv.bitwise_or(hls_white, hls_yellow)
-        return combined, hls_yellow
+        if mode == 0:
+            return combined, hls_yellow
+        # cv.imshow('Combined', combined)
+        # cv.imshow('HLS yellow', hls_yellow)
+        return l_channel, hls_yellow
 
-    def birdseye_transform(self, input, leftupper=[150, 100], rightupper=[350, 100], leftlower=[50, 180], rightlower=[400, 180]) -> tuple[np.ndarray, int, list[list[int]]]:
+    def birdseye_transform(self, input, leftupper=[150, 100], rightupper=[350, 100], leftlower=[50, 180], rightlower=[400, 180]) -> tuple[np.ndarray, np.ndarray, list[list[int]]]:
         """Method to transform the POV frame to a birdseye view.
 
         Args:
@@ -70,20 +81,20 @@ class Preproc:
 
         Returns:
             birdseye (np.ndarray): Birdseyeview transformed frame.
-            Minv (int): Inverse matrix for backtransformation into POV.
+            Minv (np.ndarray): Inverse matrix for backtransformation into POV.
             birdview_points (list[list[int]]): Selected points for birdeye view transformation.
         """
         height, width = input.shape[:2]
         birdview_points = [leftupper, rightupper, leftlower, rightlower]
 
         src = np.float32([leftupper, leftlower, rightupper, rightlower])
-        dst = np.float32([[0, 0], [0, height], [width, 0], [width, height]])
+        dst = np.float32([[0, 0], [170, height], [width, 0], [width-175, height]])
         Matrix = cv.getPerspectiveTransform(src, dst)
         Minv = cv.getPerspectiveTransform(dst, src)
         birdseye = cv.warpPerspective(input, Matrix, (width, height))
         return birdseye, Minv, birdview_points  # Felülnézeti kép, inverz mátrix
 
-    def make_binary(self, combined: np.ndarray, thresh: int = 80, kernel: np.ndarray = np.ones((5, 5))) -> tuple[np.ndarray, np.ndarray]:
+    def make_binary(self, input_frame: np.ndarray, sobel_thresh_low: int = 80, kernel: np.ndarray = np.ones((3, 3))) -> tuple[np.ndarray, np.ndarray]:
         """Grayscale image creation, blurring and thresholding method.
 
         Args:
@@ -94,13 +105,23 @@ class Preproc:
             blurred (np.ndarray): Blurred frame.
             binary (np.ndarray): Binary result frame (blurred + tresholded).
         """
-        frame_gray = cv.cvtColor(combined, cv.COLOR_BGR2GRAY)
-        # <-SLOW | FASTER ->cv2.GaussianBlur(frame_gray,(7,7),cv2.BORDER_DEFAULT)
-        blurred = cv.bilateralFilter(frame_gray, 9, 120, 120)
-        binary = cv.threshold(blurred, thresh, 255, cv.THRESH_BINARY)[1]
-        # canny = cv2.Canny(blurred,90,150) #100,200 basic tresholds <- SLOW | FASTER -> Sobel operator
-        #canny = cv2.morphologyEx(canny, cv2.MORPH_OPEN, kernel)
-        return blurred, binary
+
+        try:
+            input_frame = cv.cvtColor(input_frame, cv.COLOR_BGR2GRAY)
+        except:
+            pass
+        # blurred = cv.bilateralFilter(combined, 5, 50, 50)
+        
+        sobel_x = cv.Sobel(input_frame, cv.CV_16S, 1, 0, ksize=3, scale=1, delta=0, borderType = cv.BORDER_DEFAULT)
+        abs_sobel_x = cv.convertScaleAbs(sobel_x)
+        # cv.imshow('Abs', abs_sobel_x)
+        # thresholded = cv.threshold(abs_sobel_x, 120,255, cv.THRESH_BINARY)
+        blurred = cv.GaussianBlur(abs_sobel_x,(9,9),cv.BORDER_DEFAULT)
+        blurred = np.zeros_like(abs_sobel_x)
+        blurred[(abs_sobel_x >= sobel_thresh_low) & (abs_sobel_x <= 255)] = 255
+        # cv.imshow('Blurred', blurred)
+        # sobel_binary = cv.threshold(abs_sobel_x, thresh, 255, cv.THRESH_BINARY)[1]
+        return blurred
 
         # Opening (erosion + dilation)
     def opening(self, birdseye: np.ndarray, kernel: np.ndarray = np.ones((3, 3), np.uint8), iterations: int = 1) -> np.ndarray:
@@ -114,6 +135,6 @@ class Preproc:
         Returns:
             opened (np.ndarray): Eroded frame.
         """
-        eroded = cv.erode(birdseye, kernel, iterations)
+        eroded = cv.erode(birdseye, (1,1), iterations)
         opened = cv.dilate(eroded, kernel, iterations)
         return opened
