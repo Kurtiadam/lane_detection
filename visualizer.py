@@ -46,3 +46,28 @@ class Visualizer():
         plt.ylabel("Number of white pixels")
         plt.plot(histogram)
         plt.show()
+
+    @staticmethod
+    def write_text(img: np.ndarray, direction: str, yellow_lanes: bool, fps: int) -> np.ndarray:
+        """Signaling the driver to take the appropiate wheel operation.
+
+        Args:
+            img (np.ndarray): Input frame.
+            direction (str): Direction of the deviation from the lane center.
+
+        Returns:
+            np.ndarray: Marked frame.
+        """
+        final = cv.putText(img, 'FPS: '+str(fps), (500, 470), cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 1, cv.LINE_AA)
+        if yellow_lanes:
+            final = cv.putText(img, 'FOLLOWING YELLOW LANES', (5, 470), cv.FONT_HERSHEY_COMPLEX, 1, (0,215, 255), 1, cv.LINE_AA)
+        match direction:
+            case 0:
+                final = cv.putText(img, 'IN CENTER!', (10, 50), cv.FONT_HERSHEY_COMPLEX, 1.5, (0,255, 0), 2, cv.LINE_AA)
+            case 1:
+                direction_text = "WARNING! KEEP LEFT!"
+                final = cv.putText(img, direction_text, (10, 50), cv.FONT_HERSHEY_COMPLEX, 1.5, (0,0, 255), 2, cv.LINE_AA)
+            case -1:
+                direction_text = "WARNING! KEEP RIGHT!"
+                final = cv.putText(img, direction_text, (10, 50), cv.FONT_HERSHEY_COMPLEX, 1.5, (0,0, 255), 2, cv.LINE_AA)
+        return final
