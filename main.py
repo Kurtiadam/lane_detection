@@ -28,7 +28,7 @@ class LaneDetection:
         self.left_poly = [0, 0]
         self.right_poly = [0, 0]
         self.yellow_lanes_flag = False
-        
+
         self.SOBEL_THRESH_LOW = 90
         self.DOWNSCALE_TARGET_RES = [640, 480]
         self.CROP_VERT_START = 250
@@ -36,7 +36,8 @@ class LaneDetection:
         self.PERS_TRANS_LEFTUPPER = [self.DOWNSCALE_TARGET_RES[0]/2-150/2, 40]
         self.PERS_TRANS_RIGHTUPPER = [self.DOWNSCALE_TARGET_RES[0]/2+150/2, 40]
         self.PERS_TRANS_LEFTLOWER = [self.DOWNSCALE_TARGET_RES[0]/2-400/2, 230]
-        self.PERS_TRANS_RIGHTLOWER = [self.DOWNSCALE_TARGET_RES[0]/2+400/2, 230]
+        self.PERS_TRANS_RIGHTLOWER = [
+            self.DOWNSCALE_TARGET_RES[0]/2+400/2, 230]
 
         self.LOWER_YELLOW = np.array([15, 80, 100])
         self.UPPER_YELLOW = np.array([30, 200, 255])
@@ -140,7 +141,7 @@ class LaneDetection:
 def main():
     lane_detector = LaneDetection(frame=FrameDB(
         'example_material\\example_video.mp4'), prepoc=Preproc(), featext=FeatExtract(), visualizer=Visualizer())
-    lane_detector.run(mode = 1, birdseye_view__points_debug=False,
+    lane_detector.run(mode=1, birdseye_view__points_debug=False,
                       histogram_debug=True, sliding_windows_debug=True, save_result=True)
 
 

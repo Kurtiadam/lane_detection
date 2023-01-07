@@ -28,17 +28,18 @@ class FrameDB:
         return self.streaming, base
 
     def reconsturct_store(self, frame):
-            height, width, layers = frame.shape
-            frame_upscaled = cv.resize(frame, (width*4,height*4))
-            self.mod_frame_array.append(frame_upscaled)
-            return self.mod_frame_array
+        height, width, layers = frame.shape
+        frame_upscaled = cv.resize(frame, (width*4, height*4))
+        self.mod_frame_array.append(frame_upscaled)
+        return self.mod_frame_array
 
     def save_to_database(self, frame_array):
         height, width, layers = frame_array[0].shape
-        size = (width,height)
+        size = (width, height)
         os.mkdir('output')
         os.chdir('output')
-        out = cv.VideoWriter('detected_lanes.avi', cv.VideoWriter_fourcc(*'XVID'), 24.0, size)
+        out = cv.VideoWriter('detected_lanes.avi',
+                             cv.VideoWriter_fourcc(*'XVID'), 24.0, size)
         for frame in frame_array:
             out.write(frame)
         out.release()

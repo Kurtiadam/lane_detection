@@ -34,7 +34,8 @@ class FeatExtract:
         Returns:
             _type_: _description_
         """
-        midpoint = np.int32(histogram.shape[0]/2)  # .shape[0] for histogram is width
+        midpoint = np.int32(
+            histogram.shape[0]/2)  # .shape[0] for histogram is width
         # leftxbase = sc.find_peaks(histogram[:midpoint])[0]
         # rightxbase = sc.find_peaks(histogram[midpoint:])[0]
         # try:
@@ -136,7 +137,7 @@ class FeatExtract:
         return left_points, right_points, sides_ok, yellow_lanes
 
     # Apply 2nd degree polynomial fit to lane pixels to fit curves
-    def poly_fit(self,left, right, left_fit_prev, right_fit_prev, nwindow_ok):
+    def poly_fit(self, left, right, left_fit_prev, right_fit_prev, nwindow_ok):
         leftx, lefty = left[:]
         rightx, righty = right[:]
         left_side_ok, right_side_ok = nwindow_ok[:]

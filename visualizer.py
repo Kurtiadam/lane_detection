@@ -58,16 +58,21 @@ class Visualizer():
         Returns:
             np.ndarray: Marked frame.
         """
-        final = cv.putText(img, 'FPS: '+str(fps), (500, 470), cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 1, cv.LINE_AA)
+        final = cv.putText(img, 'FPS: '+str(fps), (500, 470),
+                           cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 1, cv.LINE_AA)
         if yellow_lanes:
-            final = cv.putText(img, 'FOLLOWING YELLOW LANES', (5, 470), cv.FONT_HERSHEY_COMPLEX, 1, (0,215, 255), 1, cv.LINE_AA)
+            final = cv.putText(img, 'FOLLOWING YELLOW LANES', (5, 470),
+                               cv.FONT_HERSHEY_COMPLEX, 1, (0, 215, 255), 1, cv.LINE_AA)
         match direction:
             case 0:
-                final = cv.putText(img, 'IN CENTER!', (10, 50), cv.FONT_HERSHEY_COMPLEX, 1.5, (0,255, 0), 2, cv.LINE_AA)
+                final = cv.putText(
+                    img, 'IN CENTER!', (10, 50), cv.FONT_HERSHEY_COMPLEX, 1.5, (0, 255, 0), 2, cv.LINE_AA)
             case 1:
                 direction_text = "WARNING! KEEP LEFT!"
-                final = cv.putText(img, direction_text, (10, 50), cv.FONT_HERSHEY_COMPLEX, 1.5, (0,0, 255), 2, cv.LINE_AA)
+                final = cv.putText(img, direction_text, (10, 50),
+                                   cv.FONT_HERSHEY_COMPLEX, 1.5, (0, 0, 255), 2, cv.LINE_AA)
             case -1:
                 direction_text = "WARNING! KEEP RIGHT!"
-                final = cv.putText(img, direction_text, (10, 50), cv.FONT_HERSHEY_COMPLEX, 1.5, (0,0, 255), 2, cv.LINE_AA)
+                final = cv.putText(img, direction_text, (10, 50),
+                                   cv.FONT_HERSHEY_COMPLEX, 1.5, (0, 0, 255), 2, cv.LINE_AA)
         return final
