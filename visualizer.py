@@ -5,18 +5,18 @@ import matplotlib.pyplot as plt
 
 class Visualizer():
     @staticmethod
-    def render_cv(frame: np.ndarray, title: str = "Output"):
+    def render_cv(frame: np.ndarray, title: str = "Output") -> None:
         """This function shows the image with opencv in a new window to the user.
 
         Args:
-            frame (np.ndarray): frame (np.ndarray): Frame to show with opencv.
-            title (str, optional): Window name. Defaults to "Output".
+            frame (np.ndarray): Frame to show with opencv.
+            title (str, optional): Window name. Defaults to "Output". Multiple windows with the same names overwrite each other!
         """
         cv.imshow(title, frame)
 
     @staticmethod
-    def plot_birdview(frame: np.ndarray, points=[]):
-        """This function shows the image with matplotlib in a new window to the user. Runs only once.
+    def plot_birdview(frame: np.ndarray, points=[]) -> None:
+        """This function shows the image with matplotlib in a new window to the user. Runs only once at the beginning of the program.
 
         Args:
             frame (np.ndarray): Frame to show with matplotlib.
@@ -36,7 +36,7 @@ class Visualizer():
         plt.show()
 
     @staticmethod
-    def plot_histogram(histogram: np.ndarray):
+    def plot_histogram(histogram: np.ndarray) -> None:
         """This function shows the histogram with matplotlib in a new window to the user.
 
         Args:
@@ -49,20 +49,25 @@ class Visualizer():
 
     @staticmethod
     def write_text(img: np.ndarray, direction: str, yellow_lanes: bool, fps: int) -> np.ndarray:
-        """Signaling the driver to take the appropiate wheel operation.
+        """Displays messages to the driver and shows the FPS counter on the input frame.
 
         Args:
             img (np.ndarray): Input frame.
             direction (str): Direction of the deviation from the lane center.
 
         Returns:
-            np.ndarray: Marked frame.
+            final (np.ndarray): Marked frame with messages and FPS counter.
         """
+        # Displaying FPS counter 
         final = cv.putText(img, 'FPS: '+str(fps), (500, 470),
                            cv.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 1, cv.LINE_AA)
+
+        # Signaling the user if the yellow lanes are followed
         if yellow_lanes:
             final = cv.putText(img, 'FOLLOWING YELLOW LANES', (5, 470),
                                cv.FONT_HERSHEY_COMPLEX, 1, (0, 215, 255), 1, cv.LINE_AA)
+
+        # Giving instructions to the driver based on the location of the vehicle
         match direction:
             case 0:
                 final = cv.putText(

@@ -8,16 +8,16 @@ import time
 
 
 class LaneDetection:
-    """Class for running the lane detection algorithm"""
+    """Class for running the lane detection algorithm."""
 
     def __init__(self, frame: FrameDB = FrameDB(), prepoc: Preproc = Preproc(), featext: FeatExtract = FeatExtract(), visualizer: Visualizer = Visualizer()):
-        """Initializing input classes
+        """Initializing input classes.
 
         Args:
-            frame (FrameDB): Class for handling the example video file
-            prepoc (Preproc): Class for image processing methods
-            featext (FeatExtract): Class for feature extraction
-            visualizer (Visualizer): Class for visualizing results
+            frame (FrameDB): Class for handling the example video file.
+            prepoc (Preproc): Class for image processing methods.
+            featext (FeatExtract): Class for feature extraction.
+            visualizer (Visualizer): Class for visualizing results.
         """
         self.frame = frame
         self.prepoc = prepoc
@@ -31,6 +31,7 @@ class LaneDetection:
         self.prev_time = 1
 
         # Constants for preprocessing
+        # Color space transform constants [Hue (0-180), Lightness (0-255), Saturation (0-255)]
         self.LOWER_YELLOW = np.array([15, 80, 100])
         self.UPPER_YELLOW = np.array([30, 200, 255])
         self.LOWER_WHITE = np.array([0, 120, 0])
@@ -48,6 +49,8 @@ class LaneDetection:
         self.SOBEL_THRESH_LOW = 90
 
         # Constants for feature extraction
+        # Proportion of ROI to non-ROI of histograms vertical axis. (histogram height / HISTOGRAM_ROI_PROP)
+        self.HISTOGRAM_ROI_PROP = 2.5
         self.NWINDOWS = 20
         self.WINDOW_HOR_OFFSET = 25
         self.MINPIX = 1
@@ -78,9 +81,10 @@ class LaneDetection:
                     sobel_binary = self.prepoc.make_binary(
                         birdseye_binary, self.SOBEL_THRESH_LOW)
                     opened = self.prepoc.opening(sobel_binary)
-                    histogram = self.featext.make_histogram(opened)
+                    histogram = self.featext.make_histogram(
+                        opened, self.HISTOGRAM_ROI_PROP)
                     left, right, nwindow_ok, self.yellow_lanes_flag = self.featext.lane_search(
-                        opened, histogram, self.NWINDOWS, self.WINDOW_HOR_OFFSET, self.MINPIX, lane_type="combined", window_debug=sliding_windows_debug)
+                        opened, histogram, "combined", self.NWINDOWS, self.WINDOW_HOR_OFFSET, self.MINPIX, window_debug=sliding_windows_debug)
                     self.left_poly, self.right_poly = self.featext.poly_fit(
                         left, right, self.left_poly, self.right_poly, nwindow_ok)
                     direction, original = self.featext.draw_lane_lines(
@@ -89,7 +93,8 @@ class LaneDetection:
                     if sliding_windows_debug:
                         # self.visualizer.render_cv(birdseye_binary, 'Bird')
                         # self.visualizer.render_cv(sobel_binary, 'Sobel')
-                        self.visualizer.render_cv(opened, 'Sliding windows debugging')
+                        self.visualizer.render_cv(
+                            opened, 'Sliding windows debugging')
 
                 # Only yellow preprocessing and lane detection
                 birdseye_binary_yellow, Minv, birdview_points = self.prepoc.birdseye_transform(
@@ -97,9 +102,10 @@ class LaneDetection:
                 sobel_binary_yellow = self.prepoc.make_binary(
                     birdseye_binary_yellow, self.SOBEL_THRESH_LOW)
                 opened_yellow = self.prepoc.opening(sobel_binary_yellow)
-                histogram_yellow = self.featext.make_histogram(opened_yellow)
+                histogram_yellow = self.featext.make_histogram(
+                    opened_yellow, self.HISTOGRAM_ROI_PROP)
                 left, right, nwindow_ok, self.yellow_lanes_flag = self.featext.lane_search(
-                    opened_yellow, histogram_yellow, self.NWINDOWS, self.WINDOW_HOR_OFFSET, self.MINPIX, lane_type="yellow", window_debug=sliding_windows_debug)
+                    opened_yellow, histogram_yellow, "yellow", self.NWINDOWS, self.WINDOW_HOR_OFFSET, self.MINPIX, window_debug=sliding_windows_debug)
 
                 # If yellow lanes have been found on both sides of the vehicle
                 if self.yellow_lanes_flag:
@@ -113,13 +119,14 @@ class LaneDetection:
                     if sliding_windows_debug:
                         # self.visualizer.render_cv(birdseye_binary_yellow, 'Bird')
                         # self.visualizer.render_cv(sobel_binary_yellow, 'Sobel')
-                        self.visualizer.render_cv(opened_yellow, 'Sliding windows debugging')
+                        self.visualizer.render_cv(
+                            opened_yellow, 'Sliding windows debugging')
 
                 # Final output frame notation and visualization
                 final = self.visualizer.write_text(
                     original, direction, self.yellow_lanes_flag, fps)
                 self.visualizer.render_cv(final, 'Final')
-                
+
                 if save_result:
                     self.mod_frame_array = self.frame.reconsturct_store(final)
                 if birdseye_view__points_debug:
@@ -132,8 +139,12 @@ class LaneDetection:
                     break
             except Exception as error:
                 print(error)
+                # If the program runs into an error it saves the output if saving is enabled
                 if save_result:
                     self.frame.save_to_database(self.mod_frame_array)
+                self.frame.cap.release()
+                cv.destroyAllWindows()
+        # If the program is closed by pressing the 'q' key, the output will be save if saving is enabled
         if save_result:
             self.frame.save_to_database(self.mod_frame_array)
         self.frame.cap.release()
@@ -141,10 +152,16 @@ class LaneDetection:
 
 
 def main():
+    # Initializing the lane detection algorithm. Change between different options for running the program here: (True = ON)
+    # mode: 0: lane detection based on color filtered frames; 1: lane detection based on the lightness channel
+    # birdseye_view__points_debug: Visualizing the points which the perspective transform is based on
+    # histogram_debug: While enabled, by pressing the 'h' key, the user can see the given binary frame's histogram
+    # sliding_windows_debug: Lets the user inspect the workings of the sliding windows technique
+    # save_result: saves the output video with the detected lanes into a new folder (Can take longer)
     lane_detector = LaneDetection(frame=FrameDB(
         'example_material\\example_video.mp4'), prepoc=Preproc(), featext=FeatExtract(), visualizer=Visualizer())
     lane_detector.run(mode=0, birdseye_view__points_debug=False,
-                      histogram_debug=False, sliding_windows_debug=True, save_result=False)
+                      histogram_debug=False, sliding_windows_debug=False, save_result=False)
 
 
 if __name__ == "__main__":
