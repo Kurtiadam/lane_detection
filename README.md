@@ -1,7 +1,7 @@
 # Lane-detection system using Python and OpenCV
 
 <p align="center">
-    ![Overview](https://user-images.githubusercontent.com/98428367/211396515-48f13ad3-b0f2-43e8-ad8e-c94aa715170b.png)
+    <![Overview](https://user-images.githubusercontent.com/98428367/211396515-48f13ad3-b0f2-43e8-ad8e-c94aa715170b.png)>
 </p>
 
 ## Overview
