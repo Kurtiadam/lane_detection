@@ -1,6 +1,8 @@
 # Lane-detection system using Python and OpenCV
 
-![Overview](https://user-images.githubusercontent.com/98428367/211877265-3d5878a8-62fb-41af-8cf2-2613b83a06f2.png)
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/98428367/211877265-3d5878a8-62fb-41af-8cf2-2613b83a06f2.png">
+</p>
 
 ## Overview
 This repository contains lane detection system made as a home project. The detection is implemented using traditional (non-learning) computer vision techniques and with the usage of Python and mainly the OpenCV library.
