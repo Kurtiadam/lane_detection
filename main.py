@@ -46,7 +46,7 @@ class LaneDetection:
         self.PERS_TRANS_RIGHTLOWER = [
             self.DOWNSCALE_TARGET_RES[0]/2+400/2, 230]
 
-        self.SOBEL_THRESH_LOW = 90
+        self.SOBEL_THRESH_LOW = 80
 
         # Constants for feature extraction
         # Proportion of ROI to non-ROI of histograms vertical axis. (histogram height / HISTOGRAM_ROI_PROP)
@@ -55,7 +55,7 @@ class LaneDetection:
         self.WINDOW_HOR_OFFSET = 25
         self.MINPIX = 1
 
-    def run(self, mode: int = 0, birdseye_view__points_debug: bool = False, histogram_debug: bool = False, sliding_windows_debug: bool = False, save_result: bool = False) -> None:
+    def run(self, birdseye_view__points_debug: bool = False, histogram_debug: bool = False, sliding_windows_debug: bool = False, save_result: bool = False) -> None:
         while (self.frame.streaming):
             try:
                 # FPS measurement
@@ -72,7 +72,7 @@ class LaneDetection:
                 downscaled_cropped, disc = self.prepoc.extract_roi(
                     downscaled, self.CROP_VERT_START, self.CROP_HOR_START)
                 combined_lanes_binary, yellow_lanes_binary = self.prepoc.colorspace_transform(
-                    downscaled_cropped, mode, self.LOWER_YELLOW, self.UPPER_YELLOW, self.LOWER_WHITE, self.UPPER_WHITE)
+                    downscaled_cropped, self.LOWER_YELLOW, self.UPPER_YELLOW, self.LOWER_WHITE, self.UPPER_WHITE)
 
                 # White AND yellow preprocessing and lane detection
                 if not self.yellow_lanes_flag:
@@ -133,9 +133,9 @@ class LaneDetection:
                     self.visualizer.plot_birdview(
                         combined_lanes_binary, birdview_points)
                 if histogram_debug:
-                    if cv.waitKey(20) == ord('h'):
+                    if cv.waitKey(10) == ord('h'):
                         self.visualizer.plot_histogram(histogram)
-                if cv.waitKey(20) == ord('q'):
+                if cv.waitKey(10) == ord('q'):
                     break
             except Exception as error:
                 print(error)
@@ -152,16 +152,16 @@ class LaneDetection:
 
 
 def main():
-    # Initializing the lane detection algorithm. Change between different options for running the program here: (True = ON)
+    # Initializing and running the lane detection algorithm. Change between different options for running the program here: (True = ON)
     # mode: 0: lane detection based on color filtered frames; 1: lane detection based on the lightness channel
     # birdseye_view__points_debug: Visualizing the points which the perspective transform is based on
     # histogram_debug: While enabled, by pressing the 'h' key, the user can see the given binary frame's histogram
     # sliding_windows_debug: Lets the user inspect the workings of the sliding windows technique
     # save_result: saves the output video with the detected lanes into a new folder (Can take longer)
     lane_detector = LaneDetection(frame=FrameDB(
-        'example_material\\example_video.mp4'), prepoc=Preproc(), featext=FeatExtract(), visualizer=Visualizer())
-    lane_detector.run(mode=0, birdseye_view__points_debug=False,
-                      histogram_debug=False, sliding_windows_debug=False, save_result=False)
+        'example_material\\example_video.mp4'), prepoc=Preproc(mode = 0), featext=FeatExtract(), visualizer=Visualizer())
+    lane_detector.run(birdseye_view__points_debug=False,
+                      histogram_debug=True, sliding_windows_debug=True, save_result=False)
 
 
 if __name__ == "__main__":
