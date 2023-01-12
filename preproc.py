@@ -3,6 +3,13 @@ import cv2 as cv
 
 
 class Preproc:
+    def __init__(self, mode: int = 1) -> None:
+        """Initialization of the preprocessing algorithm.
+
+        Args:
+            mode (int, optional): mode: 0: lane detection based on color filtered frames; 1: lane detection based on the lightness channel. Defaults to 1.
+        """
+        self.mode = mode
     @staticmethod
     def downscale(frame: np.ndarray, DOWNSCALE_TARGET_RES=np.array([640, 480])) -> np.ndarray:
         """Downscales a frame.
@@ -34,8 +41,7 @@ class Preproc:
                           CROP_HOR_START:(frame.shape[1]-CROP_HOR_START)]
         return cropped, discarded
 
-    @staticmethod
-    def colorspace_transform(input_frame: np.ndarray, mode: int,
+    def colorspace_transform(self, input_frame: np.ndarray,
                              LOWER_YELLOW=np.array([15, 80, 100]),
                              UPPER_YELLOW=np.array([30, 200, 255]),
                              LOWER_WHITE=np.array([0, 120, 0]),
@@ -44,7 +50,6 @@ class Preproc:
 
         Args:
             input_frame (np.ndarray): Input frame to transform.
-            mode (int): 0: return white color filtered frames; 1: returns the lightness channel of the HLS frame
             LOWER_YELLOW (np.ndarray, optional): Lower threshold limit for the yellow color. Defaults to np.array([15, 80, 100]).
             UPPER_YELLOW (np.ndarray, optional): Upper threshold limit for the yellow color. Defaults to np.array([30, 200, 255]).
             LOWER_WHITE (np.ndarray, optional): Lower threshold limit for the white color. Defaults to np.array([0, 120, 0]).
@@ -64,7 +69,7 @@ class Preproc:
         color_filtered = cv.bitwise_or(hls_white, hls_yellow)
 
         # Changing between operation modes, see README or the main function's comments
-        if mode == 1:
+        if self.mode == 1:
             color_filtered = l_channel
         return color_filtered, hls_yellow
 
@@ -89,14 +94,13 @@ class Preproc:
 
         src = np.float32([PERS_TRANS_LEFTUPPER, PERS_TRANS_LEFTLOWER, PERS_TRANS_RIGHTUPPER, PERS_TRANS_RIGHTLOWER])
         dst = np.float32(
-            [[0, 0], [170, height], [width, 0], [width-175, height]])
+            [[0, 0], [150, height], [width, 0], [width-150, height]])
         Matrix = cv.getPerspectiveTransform(src, dst)
         Minv = cv.getPerspectiveTransform(dst, src)
         birdseye = cv.warpPerspective(input_frame, Matrix, (width, height))
         return birdseye, Minv, birdview_points
 
-    @staticmethod
-    def make_binary(input_frame: np.ndarray, SOBEL_THRESH_LOW: int = 80) -> tuple[np.ndarray, np.ndarray]:
+    def make_binary(self, input_frame: np.ndarray, SOBEL_THRESH_LOW: int = 80) -> tuple[np.ndarray, np.ndarray]:
         """Creates the binary output frame with extracted edges. 
         Includes a grayscale image transformation if needed (input frame channel > 1), Gaussian filtering, Sobel edge detection and thresholding.
 
@@ -116,6 +120,8 @@ class Preproc:
         # blurred_bilateral = cv.bilateralFilter(input_frame, 5, 50, 50)
         blurred = cv.GaussianBlur(input_frame, (5, 5), cv.BORDER_DEFAULT)
 
+        if self.mode == 1:
+            SOBEL_THRESH_LOW = 40
         sobel_x = cv.Sobel(blurred, cv.CV_16S, 1, 0, ksize=3,
                            scale=1, delta=0, borderType=cv.BORDER_DEFAULT)
         abs_sobel_x = cv.convertScaleAbs(sobel_x)
