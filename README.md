@@ -5,7 +5,7 @@
 </p>
 
 ## Overview
-This repository contains lane detection system made as a home project. The detection is implemented using traditional (non-learning) computer vision techniques and with the usage of Python and mainly the OpenCV library.
+This repository contains a lane detection system made as a home project. The detection is implemented using traditional (non-learning) computer vision techniques and with the usage of Python and mainly the OpenCV library.
 
 ## Dependencies
 
@@ -18,7 +18,7 @@ You can install these dependencies using the included "requirements.txt" file. (
 
 ## How to run
 Run the main.py file. 
-At the main function definition you can toggle between different modes which affect the running of the program, these are:
+At the main function definition in the source code you can toggle between different modes which affect the running of the program, these are:
 * mode: 0: lane detection based on color filtered frames; 1: lane detection based on the lightness channel
 * birdseye_view__points_debug: Visualizing the points which the perspective transform is based on
 * histogram_debug: While enabled, by pressing the '*h*' key, the user can see the given binary frame's histogram
@@ -72,14 +72,14 @@ White color filtering allows the concealment of shadows which can be distracting
 </p>
 
 To achieve better results from the sliding window technique and the polynomial line fitting the POV image is transformed into a birds eye view like perspective. For this the coordinates of quadrangle verticles has to be given which will be transformed into a corresponding quadrangle vertices in the destination image.
-The transformation matrix's inverse is saved for later reconstruction of the POV view. The user can enable the "*birdseye_view__points_debug*" flag with which one can see the selected region to transform.
+The transformation matrix's inverse is saved for later reconstruction of the POV view. The user can enable the '*birdseye_view__points_debug*' flag with which one can see the selected region that will be transformed.
 
 ### Blurring, Sobel filtering, binary image creation, morphological opening
 <p align="center">
     <img src="https://user-images.githubusercontent.com/98428367/212156579-a0484b20-57c4-4a14-990a-d09eb2f6da04.png">
 </p>
 
-The resulting "birds eye view" image will be blurred with a Gaussian filter to remove white noise from the camera sensor. After this Sobel filtering with a vertical kernel will be carried out to detect the vertical lines in the image. The horizontal lines are not relevant for us since the lanes are vertically displayed.
+The resulting "birds eye view" image will be blurred with a Gaussian filter to remove white noise from the camera sensor. After this Sobel filtering with a vertical kernel will be carried out to detect the vertical lines in the image. The horizontal lines are not relevant since lanes are vertically displayed.
 The resulting image is then thresholded into a binary image which only contains white and black pixels. As the preprocessings last step, the frame is morphologically opened (erosion + dilation) to further remove noise and enhance features.
 
 
@@ -88,7 +88,7 @@ The resulting image is then thresholded into a binary image which only contains 
     <img src="https://user-images.githubusercontent.com/98428367/212157001-31cba9b3-8314-43ff-a075-12f6d70e319c.png">
 </p>
 
-From the preprocessed binary frame a histogram will be created. This shows the white pixel count in every column of the image. Taking the highest spikes in both halves of this histogram can serve as a likely starting point of a lane and also the horizontal position of the first sliding window.
+From the preprocessed binary frame a histogram will be created. This shows the white pixel count in every column of the image. Taking the highest spikes on both half sides of this histogram can serve as a likely starting point of a lane and also the horizontal position of the first sliding window.
 The user can enable the '*histogram_debug*' flag to view a given frames histogram anytime by pressing the key '*h*' during the running of the program.
 
 ### Lane searching with sliding windows
@@ -109,10 +109,10 @@ A first degree polynomial line will be fitted on the resulting white pixels from
     <img src="https://user-images.githubusercontent.com/98428367/212157351-77bf7661-3e9d-4416-8e1c-d64efcb86add.png">
 </p>
 
-Lastly, the frame will be converted back into a POV view and on it will be displayed the detected lane with the middle line of it and also several messages and instructions for the user. On the left upper corner of the image the user receives messages whether the location of the vehicle in the lane is proper. If the algorithm follows yellow lanes, this will be indicated in the lower left corner. The FPS counter can be seen in the lower left corner.
+Lastly, the frame will be converted back into a POV view and on it will be displayed the detected lane with the middle line of it and also several messages and instructions for the user. On the left upper corner of the image the user receives messages whether the location of the vehicle in the lane is proper or what action the driver should make. If the algorithm follows yellow lanes, this will be indicated in the lower left corner. The FPS counter can be seen in the lower right corner.
 
 ## Discussion
-This approach of lane detection is not usable in real life. There are multiple scenarios where this algorithm won't work e.g. very dark environment, lanes covered by other vehicles or weather factors like snow etc. Certainly better results can be achieved via learning solutions e.g. deep learning based approaches.
+This approach of lane detection is not usable reliably in a real traffic situation. There are multiple scenarios where this algorithm won't work e.g. very dark environment, lanes covered by other vehicles or weather factors like snow etc. Certainly better results can be achieved via learning solutions e.g. deep learning based approaches.
 
 If any messages or proposals arise feel free to contact me or open a issue.
 Thank you for your attention!
